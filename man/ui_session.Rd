@@ -4,7 +4,8 @@
 \alias{ui_session}
 \title{shiny UI session management in HIDAP-AGROFIMS}
 \usage{
-ui_session(type = "tab", title = "User session", name = "open_session")
+ui_session(type = "tab", title = "User session",
+  name = "open_fieldbook")
 }
 \arguments{
 \item{type}{type of ui element; default is a tab in a shiny dashboard}
