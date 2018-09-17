@@ -19,5 +19,5 @@ server_session(input, output, session, values)
 Session management for HIDAP-AGROFIMS
 }
 \author{
-Omar Benites Ivan Perez
+Ivan Perez / Omar Benites
 }
