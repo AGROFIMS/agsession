@@ -64,7 +64,7 @@ server_session <- function(input, output, session, values){
       userM <- session$userData$userMail
       
       df <- data.frame(a, b, c, d, e, f, g, stringsAsFactors = F)
-      #df <- dplyr::filter(as.data.frame(df), g == userM)
+      df <- dplyr::filter(as.data.frame(df), g == userM)
       df <- df %>% dplyr::arrange(desc(f))
       
       sessionVals$aux <- data.frame(df)
@@ -86,8 +86,8 @@ server_session <- function(input, output, session, values){
       sessionVals$aux, 
       selection = 'single',
       options = list(
-        pageLength = 5#,
-        #columnDefs = list(list(visible=FALSE, targets=c(1, 7)))
+        pageLength = 5,
+        columnDefs = list(list(visible=FALSE, targets=c(1, 7)))
         #list(width = '30%', targets = c(1)),
         #list(className = 'dt-center', targets = c(7,8))
       )
