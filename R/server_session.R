@@ -30,42 +30,45 @@ server_session <- function(input, output, session, values){
   
   refreshDT <- function() {
     df <- data.frame()
-    a <- b <- c <- d <- e <- f <- c()
+    a <- b <- c <- d <- e <- f <- g <- c()
     
     if (length(my_files()) >= 1) {
       for (i in 1:length(my_files())) {
-        # Experiment ID
+        # Unique ID
         mf <- my_files()[i]
         mf <- unlist(strsplit(mf, "[.]"))
         a[i] <- mf[1]
         
-        # Experiment name
+        # Experiment ID
         fl <- read.csv(paste0(sessionpath, my_files()[i]))
         b[i] <- as.character(fl[5, 4])
         
-        # Experiment project name
+        # Experiment name
+        fl <- read.csv(paste0(sessionpath, my_files()[i]))
         c[i] <- as.character(fl[6, 4])
         
+        # Experiment project name
+        d[i] <- as.character(fl[7, 4])
+        
         # Date created 
-        d[i] <- as.character(fl[2, 4])
+        e[i] <- as.character(fl[2, 4])
         
         # Date modified
         #e[i] <- as.character(file.info(paste0(sessionpath, my_files()[i]))$mtime)
-        e[i] <- as.character(fl[3, 4])
+        f[i] <- as.character(fl[3, 4])
         
         # User
-        f[i] <- as.character(fl[1, 4])
+        g[i] <- as.character(fl[1, 4])
       }
       
       userM <- session$userData$userMail
       
-      df <- data.frame(a, b, c, d, e, f, stringsAsFactors = F)
-      df <- dplyr::filter(as.data.frame(df), f == userM)
-      df <- df %>% dplyr::arrange(desc(e))
-      #colnames(df) <- c("Experiment.ID", "Experiment.name", "Experiment project name", "Date.created", "Date.modified", "User")
+      df <- data.frame(a, b, c, d, e, f, g, stringsAsFactors = F)
+      #df <- dplyr::filter(as.data.frame(df), g == userM)
+      df <- df %>% dplyr::arrange(desc(f))
       
       sessionVals$aux <- data.frame(df)
-      colnames(sessionVals$aux) <- c("Experiment ID", "Experiment name", "Experiment project name", "Date created", "Date modified", "User")
+      colnames(sessionVals$aux) <- c("ID", "Experiment ID", "Experiment name", "Experiment project name", "Date created", "Date modified", "User")
     } else {
       
       sessionVals$aux <- data.frame()
@@ -83,8 +86,8 @@ server_session <- function(input, output, session, values){
       sessionVals$aux, 
       selection = 'single',
       options = list(
-        pageLength = 5,
-        columnDefs = list(list(visible=FALSE, targets=c(6)))
+        pageLength = 5#,
+        #columnDefs = list(list(visible=FALSE, targets=c(1, 7)))
         #list(width = '30%', targets = c(1)),
         #list(className = 'dt-center', targets = c(7,8))
       )
@@ -104,7 +107,7 @@ server_session <- function(input, output, session, values){
     if (length(selectedRow() != 0)) {
       if (file.exists(isolate(paste0(sessionpath, selectedRow(), ".csv")))){
         uploaded_inputs <- read.csv(paste0(sessionpath, selectedRow(), ".csv"))
-        
+        #print(uploaded_inputs)
         for(i in 1:nrow(uploaded_inputs)) {
           type <- as.character(uploaded_inputs[i, 2])
           create <- as.character(uploaded_inputs[i, 3])
@@ -116,10 +119,19 @@ server_session <- function(input, output, session, values){
           }
           
           if (type == "dateRangeInput") {
-            updateDateRangeInput(session,
+            if (uploaded_inputs[i, 4] != "") {
+              v <- getInputs(uploaded_inputs[i, 4], "")
+              x <- as.Date(v[1]) + 1
+              y <- as.Date(v[2]) + 1
+              updateAirDateInput(session,
                                  inputId = uploaded_inputs$inputId[i],
-                                 start =  getInputs(uploaded_inputs[i, 4], "start"),
-                                 end =  getInputs(uploaded_inputs[i, 4], "end"))
+                                 value = c(x, y),
+                                 clear = T)
+            } else {
+              updateAirDateInput(session,
+                                 inputId = uploaded_inputs$inputId[i],
+                                 clear = T)
+            }
           }
           
           if (type == "selectizeInput" && create == "n") {
@@ -159,6 +171,21 @@ server_session <- function(input, output, session, values){
                                 inputId = uploaded_inputs$inputId[i],
                                 value = x)
           }
+          
+          if (type == "dateInput") {
+            if (uploaded_inputs[i, 4] != "") {
+              v <- getInputs(uploaded_inputs[i, 4], "")
+              v <- as.Date(v) + 1
+              updateAirDateInput(session,
+                                 inputId = uploaded_inputs$inputId[i],
+                                 value = v,
+                                 clear = T)
+            } else {
+              updateAirDateInput(session,
+                                 inputId = uploaded_inputs$inputId[i],
+                                 clear = T)
+            }
+          }
         }
         
         delay(
@@ -174,10 +201,19 @@ server_session <- function(input, output, session, values){
             }
             
             if (type == "dateRangeInput") {
-              updateDateRangeInput(session,
+              if (uploaded_inputs[i, 4] != "") {
+                v <- getInputs(uploaded_inputs[i, 4], "")
+                x <- as.Date(v[1]) + 1
+                y <- as.Date(v[2]) + 1
+                updateAirDateInput(session,
                                    inputId = uploaded_inputs$inputId[i],
-                                   start =  getInputs(uploaded_inputs[i, 4], "start"),
-                                   end =  getInputs(uploaded_inputs[i, 4], "end"))
+                                   value = c(x, y),
+                                   clear = T)
+              } else {
+                updateAirDateInput(session,
+                                   inputId = uploaded_inputs$inputId[i],
+                                   clear = T)
+              }
             }
             
             if (type == "selectizeInput" && create == "n") {
@@ -216,6 +252,21 @@ server_session <- function(input, output, session, values){
               updateCheckboxInput(session,
                                   inputId = uploaded_inputs$inputId[i],
                                   value = x)
+            }
+            
+            if (type == "dateInput") {
+              if (uploaded_inputs[i, 4] != "") {
+                v <- getInputs(uploaded_inputs[i, 4], "")
+                v <- as.Date(v) + 1
+                updateAirDateInput(session,
+                                   inputId = uploaded_inputs$inputId[i],
+                                   value = v,
+                                   clear = T)
+              } else {
+                updateAirDateInput(session,
+                                   inputId = uploaded_inputs$inputId[i],
+                                   clear = T)
+              }
             }
           }
         )
@@ -299,8 +350,8 @@ server_session <- function(input, output, session, values){
       df[2,4] <- format(Sys.time(), '%Y-%m-%d %H:%M:%S')
       df[3,4] <- format(Sys.time(), '%Y-%m-%d %H:%M:%S')
       df[4,4] <- newId
-      value <- df[5,4]
-      df[5,4] <- paste0(value, " - copy")
+      value <- df[6,4]
+      df[6,4] <- paste0(value, " - copy")
       
       write.csv(df, paste0(sessionpath, newId, ".csv"), row.names = FALSE)
       write.csv(df, paste0(sessionpathbk, newId, ".csv"), row.names = FALSE)
